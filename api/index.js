@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import { askGemini } from "../chat.js";
+import { askOpenAI } from "../chat.js";
 
 dotenv.config();
 
@@ -9,11 +9,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+/* CHAT NORMAL */
 app.post("/chat", async (req, res) => {
   try {
     const { message } = req.body;
 
-    const reply = await askGemini(message);
+    const reply = await askOpenAI(message);
 
     res.json({ reply });
 
@@ -25,6 +26,7 @@ app.post("/chat", async (req, res) => {
   }
 });
 
+/* GENERAR EJERCICIO */
 app.post("/generate-exercise", async (req, res) => {
   try {
     const { practice, level, exercise, grade } = req.body;
@@ -51,8 +53,14 @@ Reglas:
 - no incluyas texto adicional
 `;
 
-    const reply = await askGemini(prompt);
-    const exerciseData = JSON.parse(reply);
+    const reply = await askOpenAI(prompt);
+
+    // Limpieza por si el modelo envía texto extra
+    const jsonStart = reply.indexOf("{");
+    const jsonEnd = reply.lastIndexOf("}") + 1;
+    const cleanJson = reply.slice(jsonStart, jsonEnd);
+
+    const exerciseData = JSON.parse(cleanJson);
 
     res.json(exerciseData);
 
@@ -63,7 +71,6 @@ Reglas:
     });
   }
 });
-
 
 const PORT = process.env.PORT || 3333;
 app.listen(PORT, () => {

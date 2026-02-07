@@ -1,22 +1,23 @@
 import dotenv from "dotenv";
-import { GoogleGenAI } from "@google/genai";
+import OpenAI from "openai";
 
 dotenv.config();
 
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
 });
 
-export async function askGemini(message) {
-  const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents: [
-      {
-        role: "user",
-        parts: [{ text: message }]
-      }
-    ]
-  });
+export async function askOpenAI(message) {
+  try {
+    const response = await openai.responses.create({
+      model: "gpt-5-mini", // rápido y barato (puedes cambiarlo)
+      input: message
+    });
 
-  return response.text;
+    return response.output_text;
+
+  } catch (error) {
+    console.error("Error OpenAI:", error);
+    throw error;
+  }
 }
