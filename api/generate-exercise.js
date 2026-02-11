@@ -1,6 +1,13 @@
 import { askOpenAI } from "../chat.js";
 import { readPDF } from "../utils/readPdf.js";
 
+import path from "path";
+import { fileURLToPath } from "url";
+
+// ===== FIX PATH SERVERLESS =====
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 export default async function handler(req, res) {
 
   // ===== CORS GLOBAL =====
@@ -22,21 +29,21 @@ export default async function handler(req, res) {
 
     const { book, grade, topic } = req.body;
 
-    // ===== MAPA LIBROS =====
+    // ===== MAPA LIBROS (PATH ABSOLUTO) =====
     const booksMap = {
-      "libro-1": "books/libro-1.pdf",
-      "libro-2": "books/libro-2.pdf",
-      "libro-3": "books/libro-3.pdf"
+      "libro-1": path.join(__dirname, "../books/libro-1.pdf"),
+      "libro-2": path.join(__dirname, "../books/libro-2.pdf"),
+      "libro-3": path.join(__dirname, "../books/libro-3.pdf")
     };
 
-    const path = booksMap[book];
+    const filePath = booksMap[book];
 
-    if (!path) {
+    if (!filePath) {
       return res.status(400).json({ error: "Libro no válido" });
     }
 
     // ===== LEER PDF =====
-    const pdfText = await readPDF(path);
+    const pdfText = await readPDF(filePath);
     const context = pdfText.substring(0, 6000);
 
     // ===== PROMPT =====
