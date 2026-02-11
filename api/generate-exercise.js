@@ -1,32 +1,52 @@
 import { askOpenAI } from "../chat.js";
+import { readPDF } from "../utils/readPdf.js";
 
 export default async function handler(req, res) {
-  // 🔹 HEADERS CORS
-  res.setHeader('Access-Control-Allow-Origin', '*'); // Permite cualquier origen (localhost, producción)
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
-  // 🔹 Preflight request
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
   if (req.method === 'OPTIONS') {
-    return res.status(200).end(); // Termina aquí la request OPTIONS
+    return res.status(200).end();
   }
 
-  // 🔹 Solo permitir POST
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Método no permitido' });
   }
 
   try {
-    const { practice, level, exercise, grade } = req.body;
+    const { book, grade, topic } = req.body;
+
+    // 📚 MAPEAR LIBROS
+    const booksMap = {
+      "libro-1": "./books/libro-1.pdf",
+      "libro-2": "./books/libro-2.pdf",
+      "libro-3": "./books/libro-3.pdf"
+    };
+
+    const path = booksMap[book];
+
+    if (!path) {
+      return res.status(400).json({ error: "Libro no válido" });
+    }
+
+    // Leer PDF
+    const pdfText = await readPDF(path);
+
+    // Limitar texto (token limit)
+    const context = pdfText.substring(0, 6000);
 
     const prompt = `
-Genera UN ejercicio matemático para alumnos de ${grade} de secundaria.
+Eres un generador de ejercicios matemáticos basado en libros escolares.
 
-Tipo de práctica: ${practice}
-Nivel: ${level} de 10
-Ejercicio: ${exercise} de 5
+Tema: ${topic}
+Grado: ${grade}
 
-Devuelve SOLO JSON válido con esta estructura exacta:
+Contenido del libro:
+${context}
+
+Genera 1 ejercicio en JSON:
 
 {
   "question": "string",
@@ -34,24 +54,21 @@ Devuelve SOLO JSON válido con esta estructura exacta:
   "answer": number,
   "points": number
 }
-
-Reglas:
-- dificultad acorde al nivel
-- la respuesta correcta debe estar en options
-- no incluyas texto adicional
 `;
 
     const reply = await askOpenAI(prompt);
 
-    // Limpiar por si hay texto extra
+    // Limpiar JSON
     const jsonStart = reply.indexOf("{");
     const jsonEnd = reply.lastIndexOf("}") + 1;
     const cleanJson = reply.slice(jsonStart, jsonEnd);
-    const exerciseData = JSON.parse(cleanJson);
 
-    res.status(200).json(exerciseData);
+    res.json(JSON.parse(cleanJson));
 
   } catch (error) {
-    res.status(500).json({ error: "Error generando ejercicio", detail: error.message });
+    res.status(500).json({
+      error: "Error generando ejercicio",
+      detail: error.message
+    });
   }
 }
