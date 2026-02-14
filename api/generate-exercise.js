@@ -1,62 +1,42 @@
 import { askOpenAI } from "../chat.js";
-import { readPDF } from "../utils/readPdf.js";
-
-import path from "path";
-import { fileURLToPath } from "url";
-
-// ===== FIX PATH SERVERLESS =====
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 export default async function handler(req, res) {
 
-  // ===== CORS GLOBAL =====
+  // ===== CORS =====
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-  // ===== PREFLIGHT =====
   if (req.method === "OPTIONS") {
     return res.status(200).end();
   }
 
-  // ===== VALIDAR MÉTODO =====
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Método no permitido" });
   }
 
   try {
 
-    const { book, grade, topic } = req.body;
+    const { topic, grade = "1ro", level = 1 } = req.body;
 
-    // ===== MAPA LIBROS (PATH ABSOLUTO) =====
-    const booksMap = {
-      "libro-1": path.join(__dirname, "../books/libro-1.pdf"),
-      "libro-2": path.join(__dirname, "../books/libro-2.pdf"),
-      "libro-3": path.join(__dirname, "../books/libro-3.pdf")
-    };
-
-    const filePath = booksMap[book];
-
-    if (!filePath) {
-      return res.status(400).json({ error: "Libro no válido" });
+    if (!topic) {
+      return res.status(400).json({ error: "Tema requerido" });
     }
 
-    // ===== LEER PDF =====
-    const pdfText = await readPDF(filePath);
-    const context = pdfText.substring(0, 6000);
-
-    // ===== PROMPT =====
+    // ===== PROMPT DINÁMICO SEGÚN TEMA =====
     const prompt = `
-Eres un generador de ejercicios matemáticos basado en libros escolares.
+Genera 1 ejercicio matemático para estudiantes de ${grade} de secundaria.
 
 Tema: ${topic}
-Grado: ${grade}
+Nivel de dificultad: ${level} de 10
 
-Contenido del libro:
-${context}
+Reglas:
+- No usar decimales si el nivel es bajo
+- 4 alternativas
+- Solo 1 correcta
+- Dificultad acorde al nivel
 
-Genera 1 ejercicio en JSON:
+Devuelve SOLO JSON válido:
 
 {
   "question": "string",
@@ -73,7 +53,9 @@ Genera 1 ejercicio en JSON:
     const jsonEnd = reply.lastIndexOf("}") + 1;
     const cleanJson = reply.slice(jsonStart, jsonEnd);
 
-    return res.status(200).json(JSON.parse(cleanJson));
+    const data = JSON.parse(cleanJson);
+
+    return res.status(200).json(data);
 
   } catch (error) {
 
