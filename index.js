@@ -42,7 +42,9 @@ app.get('/api/check-books', (req, res) => {
 
 app.post('/api/generate-exercise', async (req, res) => {
   const { topic, difficulty, book } = req.body;
-  let question, answer, options;
+  let question = '';
+  let answer = '';  // <-- asignación por defecto
+  let options = [];
 
   try {
     if (book) {
@@ -119,7 +121,7 @@ app.post('/api/generate-exercise', async (req, res) => {
         case 'restas': answer = a-b; question = `¿Cuánto es ${a} - ${b}?`; break;
         case 'multiplicaciones': answer = a*b; question = `¿Cuánto es ${a} × ${b}?`; break;
         case 'divisiones': answer = Math.floor(a/b); question = `¿Cuánto es ${a} ÷ ${b}?`; break;
-        default: question = `Ejercicio de ${topic} nivel ${difficulty}`; answer='A';
+        default: question = `Ejercicio de ${topic} nivel ${difficulty}`; answer='A';options = ['A','B','C','D','E'];
       }
 
       if (typeof answer === 'number') {
