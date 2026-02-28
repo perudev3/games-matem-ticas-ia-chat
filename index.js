@@ -43,10 +43,11 @@ app.get('/api/check-books', (req, res) => {
 app.post('/api/generate-exercise', async (req, res) => {
   const { topic, difficulty, book } = req.body;
   let question = '';
-  let answer = '';  // <-- asignación por defecto
+  let answer = '';
   let options = [];
 
   try {
+    // ===== PDF =====
     if (book) {
       const booksPath = path.join(process.cwd(), 'public/books');
       const filePath = path.join(booksPath, `${book}.pdf`);
@@ -63,13 +64,10 @@ app.post('/api/generate-exercise', async (req, res) => {
       const dataBuffer = fs.readFileSync(filePath);
       const pdfData = await pdfParse(dataBuffer);
 
-      const lines = pdfData.text
-        .split('\n')
-        .map(l => l.trim())
-        .filter(l => l.length > 10);
+      const lines = pdfData.text.split('\n').map(l => l.trim()).filter(l => l.length > 10);
 
       if (lines.length === 0) {
-        // Generar ejercicio con IA
+        // IA
         const completion = await openai.chat.completions.create({
           model: "gpt-4o-mini",
           messages: [
@@ -83,8 +81,8 @@ app.post('/api/generate-exercise', async (req, res) => {
             }
           ]
         });
-
         const parsed = JSON.parse(completion.choices[0].message.content);
+
         return res.json({
           question: parsed.question,
           options: parsed.options,
@@ -93,41 +91,43 @@ app.post('/api/generate-exercise', async (req, res) => {
           source: 'ai',
           book
         });
+      }
+
+      // PDF con líneas
+      question = lines[Math.floor(Math.random() * lines.length)];
+      if (topic === 'sumas' || topic === 'restas') {
+        const a = Math.floor(Math.random() * 20) + 1;
+        const b = Math.floor(Math.random() * 20) + 1;
+        answer = topic === 'sumas' ? a + b : a - b;
+        question = topic === 'sumas' ? `¿Cuánto es ${a} + ${b}?` : `¿Cuánto es ${a} - ${b}?`;
+        options = [answer, answer + 1, answer - 1, answer + 2].sort(() => Math.random() - 0.5);
       } else {
-        // Tomar línea al azar
-        question = lines[Math.floor(Math.random() * lines.length)];
-        if (topic === 'sumas' || topic === 'restas') {
-          const a = Math.floor(Math.random() * 20) + 1;
-          const b = Math.floor(Math.random() * 20) + 1;
-          answer = topic === 'sumas' ? a + b : a - b;
-          question = topic === 'sumas' ? `¿Cuánto es ${a} + ${b}?` : `¿Cuánto es ${a} - ${b}?`;
-          options = [answer, answer + 1, answer - 1, answer + 2].sort(() => Math.random() - 0.5);
-        } else {
-          options = ['A','B','C','D','E'];
-          answer = options[Math.floor(Math.random() * options.length)];
-        }
+        options = ['A','B','C','D','E'];
+        answer = options[Math.floor(Math.random() * options.length)];
       }
 
       return res.json({ question, options, answer, points: 10, source: 'pdf', book });
     }
 
-    console.log("🔄 Nuevo deploy forzado"); 
-    // Caso topic dinámico
+    // ===== Topic dinámico =====
     if (topic) {
-      let a = Math.floor(Math.random() * 20) + 1;
-      let b = Math.floor(Math.random() * 20) + 1;
+      const a = Math.floor(Math.random() * 20) + 1;
+      const b = Math.floor(Math.random() * 20) + 1;
 
       switch(topic) {
-        case 'sumas': answer = a+b; question = `¿Cuánto es ${a} + ${b}?`; break;
-        case 'restas': answer = a-b; question = `¿Cuánto es ${a} - ${b}?`; break;
-        case 'multiplicaciones': answer = a*b; question = `¿Cuánto es ${a} × ${b}?`; break;
-        case 'divisiones': answer = Math.floor(a/b); question = `¿Cuánto es ${a} ÷ ${b}?`; break;
-        default: question = `Ejercicio de ${topic} nivel ${difficulty}`; answer='A';options = ['A','B','C','D','E'];
+        case 'sumas': answer = a + b; question = `¿Cuánto es ${a} + ${b}?`; break;
+        case 'restas': answer = a - b; question = `¿Cuánto es ${a} - ${b}?`; break;
+        case 'multiplicaciones': answer = a * b; question = `¿Cuánto es ${a} × ${b}?`; break;
+        case 'divisiones': answer = Math.floor(a / b); question = `¿Cuánto es ${a} ÷ ${b}?`; break;
+        default: question = `Ejercicio de ${topic} nivel ${difficulty}`; answer = 'A';
       }
 
+      // Opciones si es número o string
       if (typeof answer === 'number') {
         options = [answer, answer+1, answer-1, answer+2].sort(() => Math.random() - 0.5);
-      } else options = ['A','B','C','D','E'];
+      } else if (options.length === 0) {
+        options = ['A','B','C','D','E'];
+      }
 
       return res.json({ question, options, answer, points: 10, source: 'topic' });
     }
