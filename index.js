@@ -111,6 +111,7 @@ app.post('/api/generate-exercise', async (req, res) => {
       return res.json({ question, options, answer, points: 10, source: 'pdf', book });
     }
 
+    console.log("🔄 Nuevo deploy forzado"); 
     // Caso topic dinámico
     if (topic) {
       let a = Math.floor(Math.random() * 20) + 1;
