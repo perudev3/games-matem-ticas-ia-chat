@@ -42,7 +42,8 @@ app.get('/api/check-books', (req, res) => {
 
 app.post('/api/generate-exercise', async (req, res) => {
   const { topic, difficulty, book } = req.body;
-
+  let question, answer, options;
+  
   try {
     let question, options, answer;
 
