@@ -1,41 +1,48 @@
-const express = require('express');
-const cors = require('cors');
-const fs = require('fs');
-const path = require('path');
+import express from 'express';
+import cors from 'cors';
+import fs from 'fs';
+import path from 'path';
+import dotenv from 'dotenv';
+import OpenAI from 'openai';
+import pdfParseLib from 'pdf-parse';
 
-require('dotenv').config()
-const OpenAI = require('openai')
+dotenv.config();
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-})
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-let pdfParse = require('pdf-parse');
-if (pdfParse.default) {
-  pdfParse = pdfParse.default;
-}
+let pdfParse = pdfParseLib;
+if (pdfParse.default) pdfParse = pdfParse.default;
 
 const app = express();
-app.use(cors());
+
+// ======================
+// Configuración CORS
+// ======================
+const allowedOrigins = [
+  'http://localhost:9000',          // tu frontend local
+  'https://chat-ia-three.vercel.app' // dominio de tu Vercel
+];
+
+app.use(cors({
+  origin: allowedOrigins,
+  methods: ['GET','POST','OPTIONS'],
+  credentials: true
+}));
+
 app.use(express.json());
 
-app.get('/api/check-books', (req, res) => {
+// ======================
+// Endpoints
+// ======================
+
+// check-books
+app.get('/check-books', (req, res) => {
   const booksPath = path.join(__dirname, 'public', 'books');
-  
   if (!fs.existsSync(booksPath)) {
-    return res.json({ 
-      exists: false, 
-      path: booksPath,
-      message: 'La carpeta books no existe'
-    });
+    return res.json({ exists: false, path: booksPath, message: 'La carpeta books no existe' });
   }
-  
   const files = fs.readdirSync(booksPath);
-  res.json({ 
-    exists: true, 
-    path: booksPath,
-    files: files 
-  });
+  res.json({ exists: true, path: booksPath, files });
 });
 
 app.post('/api/generate-exercise', async (req, res) => {
