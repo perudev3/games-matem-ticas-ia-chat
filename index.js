@@ -43,10 +43,8 @@ app.get('/api/check-books', (req, res) => {
 app.post('/api/generate-exercise', async (req, res) => {
   const { topic, difficulty, book } = req.body;
   let question, answer, options;
-  
-  try {
-    let question, options, answer;
 
+  try {
     if (book) {
       const booksPath = path.join(process.cwd(), 'public/books');
       const filePath = path.join(booksPath, `${book}.pdf`);
