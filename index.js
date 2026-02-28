@@ -201,9 +201,18 @@ app.post('/api/chat', async (req, res) => {
 })
 
 
-const PORT = 3000;
+/* const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
   console.log(`📁 Directorio actual: ${__dirname}`);
   console.log(`📚 Carpeta de libros: ${path.join(__dirname, 'public', 'books')}`);
-});
+}); */
+
+if (process.env.VERCEL !== '1') {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log(`Servidor corriendo en http://localhost:${PORT}`);
+  });
+}
+
+export default app; 
