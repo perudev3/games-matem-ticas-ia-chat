@@ -8,9 +8,16 @@ const allowedOrigins = [
 
 // middleware CORS
 const corsMiddleware = cors({
-  origin: allowedOrigins,
-  methods: ['GET','POST','OPTIONS'],
-  credentials: true
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type'],
 });
 
 // función para ejecutar cors en serverless
