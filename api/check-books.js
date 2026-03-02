@@ -1,7 +1,9 @@
 import fs from 'fs'
 import path from 'path'
+import { allowCors } from './_utils/cors.js'
 
-export default function handler(req, res) {
+async function handler(req, res) {
+
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
@@ -24,3 +26,5 @@ export default function handler(req, res) {
     files
   })
 }
+
+export default allowCors(handler)

@@ -2,13 +2,15 @@ import fs from 'fs'
 import path from 'path'
 import OpenAI from 'openai'
 import pdfParseLib from 'pdf-parse'
+import { allowCors } from './_utils/cors.js'
+
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
 let pdfParse = pdfParseLib
 if (pdfParse.default) pdfParse = pdfParse.default
 
-export default async function handler(req, res) {
+async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
@@ -138,3 +140,5 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Error generando ejercicio', details: err.message })
   }
 }
+
+export default allowCors(handler)
