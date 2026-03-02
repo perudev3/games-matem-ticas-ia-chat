@@ -31,7 +31,7 @@ app.use(express.json());
 // ======================
 
 // check-books
-app.get('/api/check-books', (req, res) => {
+app.get('/check-books', (req, res) => {
   const booksPath = path.join(process.cwd(), 'public/books');
   if (!fs.existsSync(booksPath)) {
     return res.json({ exists: false, path: booksPath, message: 'La carpeta books no existe' });
@@ -40,7 +40,7 @@ app.get('/api/check-books', (req, res) => {
   res.json({ exists: true, path: booksPath, files });
 });
 
-app.post('/api/generate-exercise', async (req, res) => {
+app.post('/generate-exercise', async (req, res) => {
   const { topic, difficulty, book } = req.body;
   let question = '';
   let answer = '';
@@ -140,7 +140,7 @@ app.post('/api/generate-exercise', async (req, res) => {
   }
 });
 
-app.post('/api/chat', async (req, res) => {
+app.post('/chat', async (req, res) => {
   try {
     const { message } = req.body;
     if (!message) return res.status(400).json({ error: 'No message provided' });
