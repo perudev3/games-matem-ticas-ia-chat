@@ -3,7 +3,7 @@ import cors from 'cors';
 
 const allowedOrigins = [
   'http://localhost:9000',               // frontend local
-  'https://chat-ia-three.vercel.app'    // dominio Vercel
+  'https://games-matem-ticas-ia-chat.vercel.app/'    // dominio Vercel
 ];
 
 // middleware CORS
