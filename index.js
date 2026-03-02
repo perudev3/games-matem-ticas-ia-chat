@@ -19,12 +19,15 @@ const app = express();
 // Configuración CORS global
 // ======================
 app.use(cors({
-  origin: ['http://localhost:9000', 'https://games-matem-ticas-ia-chat.vercel.app/'],
+  origin: [
+    'http://localhost:9000',
+    'https://games-matem-ticas-ia-chat.vercel.app'
+  ],
   methods: ['GET','POST','OPTIONS'],
-  credentials: true
+  allowedHeaders: ['Content-Type']
 }));
 
-app.use(express.json());
+app.options('*', cors());
 
 // ======================
 // Endpoints
