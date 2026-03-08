@@ -118,14 +118,27 @@ async function handler(req, res) {
           answer = Math.floor(a / b)
           question = `¿Cuánto es ${a} ÷ ${b}?`
           break
+        case 'series':
+          const n = Math.floor(Math.random() * 5) + 2
+          const series = [n, n*2, n*3, n*4]
+          answer = n*5
+          question = `¿Qué número sigue en la serie?\n${series.join(', ')}, ___`
+          break
+        case 'mixto':
+          const x = Math.floor(Math.random() * 10) + 2
+          const y = Math.floor(Math.random() * 10) + 2
+          const z = Math.floor(Math.random() * 10) + 2
+
+          answer = (x + y) * z
+          question = `¿Cuánto es (${x} + ${y}) × ${z}?`
+          break
         default:
           question = `Ejercicio de ${topic} nivel ${difficulty}`
           answer = 'A'
       }
 
       if (typeof answer === 'number') {
-        options = [answer, answer+1, answer-1, answer+2]
-          .sort(() => Math.random() - 0.5)
+        options = [...new Set([answer, answer+1, answer-1, answer+2])].sort(() => Math.random() - 0.5)
       } else if (options.length === 0) {
         options = ['A','B','C','D','E']
       }
