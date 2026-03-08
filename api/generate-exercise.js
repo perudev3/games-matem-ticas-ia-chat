@@ -45,7 +45,7 @@ async function handler(req, res) {
       const lines = pdfData.text
         .split('\n')
         .map(l => l.trim())
-        .filter(l => l.length > 10)
+        .filter(l => l.length > 3)
 
       if (lines.length === 0) {
 
@@ -63,7 +63,14 @@ async function handler(req, res) {
           ]
         })
 
-        const parsed = JSON.parse(completion.choices[0].message.content)
+        const raw = completion.choices[0].message.content
+
+        const json = raw.substring(
+          raw.indexOf('{'),
+          raw.lastIndexOf('}') + 1
+        )
+
+        const parsed = JSON.parse(json)
 
         return res.json({
           question: parsed.question,
@@ -77,7 +84,7 @@ async function handler(req, res) {
 
       question = lines[Math.floor(Math.random() * lines.length)]
 
-      if (topic === 'sumas' || topic === 'restas') {
+      if (!book && (topic === 'sumas' || topic === 'restas')) {
         const a = Math.floor(Math.random() * 20) + 1
         const b = Math.floor(Math.random() * 20) + 1
 
@@ -86,8 +93,12 @@ async function handler(req, res) {
           ? `¿Cuánto es ${a} + ${b}?`
           : `¿Cuánto es ${a} - ${b}?`
 
-        options = [answer, answer + 1, answer - 1, answer + 2]
-          .sort(() => Math.random() - 0.5)
+        options = [...new Set([
+                    answer,
+                    answer + 1,
+                    answer + 2,
+                    answer - 1
+                  ])].sort(() => Math.random() - 0.5)
       } else {
         options = ['A','B','C','D','E']
         answer = options[Math.floor(Math.random() * options.length)]
@@ -115,7 +126,9 @@ async function handler(req, res) {
           question = `¿Cuánto es ${a} × ${b}?`
           break
         case 'divisiones':
-          answer = Math.floor(a / b)
+          const b = Math.floor(Math.random() * 9) + 1
+          const answer = Math.floor(Math.random() * 10) + 1
+          const a = answer * b
           question = `¿Cuánto es ${a} ÷ ${b}?`
           break
         case 'series':
