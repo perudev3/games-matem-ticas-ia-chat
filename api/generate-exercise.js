@@ -113,31 +113,43 @@ async function handler(req, res) {
       const b = Math.floor(Math.random() * 20) + 1
 
       switch(topic) {
-        case 'sumas':
+
+        case 'sumas': {
           answer = a + b
           question = `¿Cuánto es ${a} + ${b}?`
           break
-        case 'restas':
+        }
+
+        case 'restas': {
           answer = a - b
           question = `¿Cuánto es ${a} - ${b}?`
           break
-        case 'multiplicaciones':
+        }
+
+        case 'multiplicaciones': {
           answer = a * b
           question = `¿Cuánto es ${a} × ${b}?`
           break
-        case 'divisiones':
-          const b = Math.floor(Math.random() * 9) + 1
-          const answer = Math.floor(Math.random() * 10) + 1
-          const a = answer * b
-          question = `¿Cuánto es ${a} ÷ ${b}?`
+        }
+
+        case 'divisiones': {
+          const bb = Math.floor(Math.random() * 9) + 1
+          const ans = Math.floor(Math.random() * 10) + 1
+          const aa = ans * bb
+          answer = ans
+          question = `¿Cuánto es ${aa} ÷ ${bb}?`
           break
-        case 'series':
+        }
+
+        case 'series': {
           const n = Math.floor(Math.random() * 5) + 2
           const series = [n, n*2, n*3, n*4]
           answer = n*5
           question = `¿Qué número sigue en la serie?\n${series.join(', ')}, ___`
           break
-        case 'mixto':
+        }
+
+        case 'mixto': {
           const x = Math.floor(Math.random() * 10) + 2
           const y = Math.floor(Math.random() * 10) + 2
           const z = Math.floor(Math.random() * 10) + 2
@@ -145,9 +157,12 @@ async function handler(req, res) {
           answer = (x + y) * z
           question = `¿Cuánto es (${x} + ${y}) × ${z}?`
           break
-        default:
+        }
+
+        default: {
           question = `Ejercicio de ${topic} nivel ${difficulty}`
           answer = 'A'
+        }
       }
 
       if (typeof answer === 'number') {
