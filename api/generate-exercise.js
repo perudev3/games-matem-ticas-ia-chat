@@ -40,9 +40,16 @@ async function handler(req, res) {
       }
 
       const dataBuffer = fs.readFileSync(filePath)
-      const pdfData = await pdfParse(dataBuffer)
+      let pdfText = ''
 
-      const lines = pdfData.text
+      try {
+        const pdfData = await pdfParse(dataBuffer)
+        pdfText = pdfData.text
+      } catch (pdfError) {
+        console.log('⚠️ Error leyendo PDF:', pdfError.message)
+      }
+
+      const lines = pdfText
         .split('\n')
         .map(l => l.trim())
         .filter(l => l.length > 3)
@@ -94,13 +101,13 @@ async function handler(req, res) {
           : `¿Cuánto es ${a} - ${b}?`
 
         options = [...new Set([
-                    answer,
-                    answer + 1,
-                    answer + 2,
-                    answer - 1
-                  ])].sort(() => Math.random() - 0.5)
+          answer,
+          answer + 1,
+          answer + 2,
+          answer - 1
+        ])].sort(() => Math.random() - 0.5)
       } else {
-        options = ['A','B','C','D','E']
+        options = ['A', 'B', 'C', 'D', 'E']
         answer = options[Math.floor(Math.random() * options.length)]
       }
 
@@ -112,7 +119,7 @@ async function handler(req, res) {
       const a = Math.floor(Math.random() * 20) + 1
       const b = Math.floor(Math.random() * 20) + 1
 
-      switch(topic) {
+      switch (topic) {
 
         case 'sumas': {
           answer = a + b
@@ -143,8 +150,8 @@ async function handler(req, res) {
 
         case 'series': {
           const n = Math.floor(Math.random() * 5) + 2
-          const series = [n, n*2, n*3, n*4]
-          answer = n*5
+          const series = [n, n * 2, n * 3, n * 4]
+          answer = n * 5
           question = `¿Qué número sigue en la serie?\n${series.join(', ')}, ___`
           break
         }
@@ -166,9 +173,9 @@ async function handler(req, res) {
       }
 
       if (typeof answer === 'number') {
-        options = [...new Set([answer, answer+1, answer-1, answer+2])].sort(() => Math.random() - 0.5)
+        options = [...new Set([answer, answer + 1, answer - 1, answer + 2])].sort(() => Math.random() - 0.5)
       } else if (options.length === 0) {
-        options = ['A','B','C','D','E']
+        options = ['A', 'B', 'C', 'D', 'E']
       }
 
       return res.json({ question, options, answer, points: 10, source: 'topic' })

@@ -17,6 +17,7 @@
     "openai": "^6.25.0",
     "pdf-parse": "^1.1.1",
     "pdf2pic": "^3.2.0",
+    "pdfjs-dist": "^5.5.207",
     "tesseract.js": "^7.0.0"
   },
   "devDependencies": {
